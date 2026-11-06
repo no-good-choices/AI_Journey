@@ -16,6 +16,10 @@ def run_resume_tailor():
     # 1. Your current practical engineering baseline skill stack
     my_resume_profile = """
     TECHNICAL SKILLS:
+    - Electrical Infrastructure: Installed utility electrical meters, main power lines and residential/commercial distribution setups.
+    - Technical Analysis: Interpreted complex industrial blueprints and technical schematics to execute hardware installations.
+    - Operations & Scaling: Experienced managing inventory control metrics, field operations and optimizing production output.
+    - Software & Systems: Python scripting, data automation, Microsoft Excel and local pipeline configuration.
     - Python Scripting & Local Engineering Workspace
     - API Integration Pipelines (Google GenAI Core SDK)
     - Structural Environment Security & Masking Management (.env, .gitignore)
