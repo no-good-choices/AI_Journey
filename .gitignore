@@ -1,1 +1,10 @@
 .env
+# Game Boy ROMs & temporary reverse-engineering scripts
+roms/
+*.gb
+*.gbc
+*.2bpp
+find_*.py
+locate_*.py
+map_*.py
+*.png
