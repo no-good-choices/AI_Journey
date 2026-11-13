@@ -8,3 +8,5 @@ find_*.py
 locate_*.py
 map_*.py
 *.png
+*.sav
+__pycache__/
