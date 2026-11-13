@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtWebEngineWidgets import QWebEngineView
 import rag_engine_2
+import mesh_parser
 
 VIEWPORT_HTML = """<!DOCTYPE html>
 <html>
@@ -247,15 +248,31 @@ class TsiataPlatform(QMainWindow):
     def on_import_button_clicked(self):
         self.status_bar.showMessage("Awaiting user file selection from system exploration panel...")
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "TSIATA - Select Engineering Target Asset File", "", "Design Data Files (*.json *.step *.gltf *.obj);;All Files (*)"
+            self,
+            "TSIATA - Select Engineering Target Asset File",
+            "",
+            "3D & Design Files (*.obj *.stl *.stp *.step *.json *.gltf);;All Files (*)"
+
         )
         if file_path:
             file_name = os.path.basename(file_path)
             self.component_list.addItem(file_name)
-            self.status_bar.showMessage(f"Ingested asset structural file node: {file_name}")
-            geometry_status = "Metadata registered (CAD mesh parser queued)."
-            if file_path.lower().endswith(".json"):
-                try:
+            self.status_bar.showMessage(f"Parsing asset structural geometry: {file_name}...")
+            lower = file_path.lower()
+            geometry_status = "Metadata registered (CAD parser queued)."
+
+            try:
+                if lower.endswith((".obj", ".stl", ".stp", ".step")):
+
+                    nodes, edges = mesh_parser.load_mesh_file(file_path)
+                    if nodes:
+                        self.threejs_view.page().runJavaScript(
+                            f"loadCustomBlueprint({json.dumps(file_name)}, {json.dumps(nodes)}, {json.dumps(edges)});"
+                        )
+                        geometry_status = f"Parsed CAD mesh: {len(nodes)} vertices and {len(edges)} structural edges rendered."
+                    else:
+                        geometry_status = "Mesh file contained zero readable vertices."
+                elif lower.endswith(".json"):
                     with open(file_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
                     if "nodes" in data and "edges" in data:
@@ -265,8 +282,10 @@ class TsiataPlatform(QMainWindow):
                             f"loadCustomBlueprint({json.dumps(file_name)}, {nodes_json}, {edges_json});"
                         )
                         geometry_status = f"Rendered {len(data.get('nodes'))} nodes and {len(data.get('edges'))} edges in 3D viewport."
-                except Exception as e:
-                    geometry_status = f"JSON loaded as data node (no wireframe matrix found: {e})."
+            except Exception as e:
+                geometry_status = f"Asset parse warning: {e}"
+
+            self.status_bar.showMessage(f"Ingested asset node: {file_name}")
             self.info_text.setText(
                 f"<b>File Import Pipeline Active</b><br>"
                 f"<b>Source Location:</b> <span style='color: #0A5C96;'>{file_path}</span><br>"
@@ -275,6 +294,7 @@ class TsiataPlatform(QMainWindow):
             )
         else:
             self.status_bar.showMessage("File import operation aborted by user.")
+
 
 
 if __name__ == "__main__":
